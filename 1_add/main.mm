@@ -25,8 +25,9 @@ int main() {
   NSLog(@"Function: %@", addFunc);
 
   // call method with 2 arguments. the 2nd argument has label "error"
+  // pipeline state object
   NSError *error = nil;
-  id<MTLComputePipelineState> cpl = [device newComputePipelineStateWithFunction:addFunc error:&error];
+  id<MTLComputePipelineState> pso = [device newComputePipelineStateWithFunction:addFunc error:&error];
 
   // allocate memory that GPU can access
   const int N = 1024;
@@ -46,7 +47,7 @@ int main() {
   id<MTLCommandQueue> queue = [device newCommandQueue];
   id<MTLCommandBuffer> command_buf = [queue commandBuffer];
   id<MTLComputeCommandEncoder> compute_enc = [command_buf computeCommandEncoder];
-  [compute_enc setComputePipelineState:cpl];
+  [compute_enc setComputePipelineState:pso];
 
   // this corresponds to what we write in our shader. A is buffer 0, B is buffer 1, and so on.
   [compute_enc setBuffer:A offset:0 atIndex:0];
@@ -54,7 +55,7 @@ int main() {
   [compute_enc setBuffer:C offset:0 atIndex:2];
 
   // launch params
-  NSUInteger max_thread_group_size = cpl.maxTotalThreadsPerThreadgroup;  // corresponds to CUDA's thread block size
+  NSUInteger max_thread_group_size = pso.maxTotalThreadsPerThreadgroup;  // corresponds to CUDA's thread block size
   NSLog(@"Max thread group size: %tu", max_thread_group_size);
 
   // MTLSize corresponds to CUDA's dim3
